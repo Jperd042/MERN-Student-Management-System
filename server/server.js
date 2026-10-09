@@ -19,9 +19,13 @@ mongoose
 app.get("/students", async (req, res) => {
 try {
 const students = await Student.find();
+ 
 res.json(students);
+ 
 } catch (error) {
-res.status(500).json(error);
+res.status(500).json({
+message: error.message,
+});
 }
 });
  
@@ -30,18 +34,26 @@ app.post("/students", async (req, res) => {
 try {
 const { name, course, age } = req.body;
  
+if (!name || !course || age === undefined || age === "") {
+  return res.status(400).json({
+    message: "Please provide name, course, and age.",
+  });
+}
+ 
 const student = new Student({
   name,
   course,
-  age,
+  age: Number(age),
 });
  
 await student.save();
  
-res.json(student);
+res.status(201).json(student);
  
 } catch (error) {
-res.status(500).json(error);
+res.status(500).json({
+message: error.message,
+});
 }
 });
  
@@ -55,19 +67,26 @@ const updatedStudent = await Student.findByIdAndUpdate(
   {
     name,
     course,
-    age,
+    age: Number(age),
   },
-  { new: true, runValidators: true }
+  {
+    new: true,
+    runValidators: true,
+  }
 );
  
 if (!updatedStudent) {
-  return res.status(404).json({ message: "Student not found" });
+  return res.status(404).json({
+    message: "Student not found.",
+  });
 }
  
 res.json(updatedStudent);
  
 } catch (error) {
-res.status(500).json(error);
+res.status(500).json({
+message: error.message,
+});
 }
 });
  
@@ -79,16 +98,23 @@ req.params.id
 );
  
 if (!deletedStudent) {
-  return res.status(404).json({ message: "Student not found" });
+  return res.status(404).json({
+    message: "Student not found.",
+  });
 }
  
-res.json({ message: "Student deleted" });
+res.json({
+  message: "Student deleted successfully.",
+});
  
 } catch (error) {
-res.status(500).json(error);
+res.status(500).json({
+message: error.message,
+});
 }
 });
  
 app.listen(5000, () => {
 console.log("Server running on port 5000");
 });
+ 
